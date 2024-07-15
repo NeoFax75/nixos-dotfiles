@@ -1,14 +1,10 @@
-# Edit this configuration file to define what should be installed on
-# your system. Help is available in the configuration.nix(5) man page, on
-# https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
-
 { config, lib, pkgs, inputs, ... }:
 
 {
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
-      inputs.home-manager.nixosModules.home-manager
+      inputs.home-manager.nixosModules.default
     ];
 
   # Use the systemd-boot EFI boot loader.
@@ -43,6 +39,7 @@
         lightdm.enable = true;
         defaultSession = "xfce";
       };
+
       desktopManager.xfce.enable = true;
       windowManager.qtile.enable = true;
     };
@@ -65,43 +62,84 @@
 
   # Enable touchpad support (enabled default in most desktopManager).
   # services.libinput.enable = true;
-
+  
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.neofax = {
     isNormalUser = true;
     extraGroups = [ 
+      "audio"
       "networkmanager" 
-      "audio" 
+      "sshd" 
       "video" 
       "wheel" 
     ]; # Enable ‘sudo’ for the user.
     
-    packages = with pkgs; [
-      brave
-      firefox
-      tree
-    ];
-
-    home-manager = {
-      extraSpecialArgs = { inherit inputs; };
-      users = {
-        "neofax" = import ./home.nix;
-      };
-    };
-
   };
 
 
   programs.zsh.enable = true;
 
-  # List packages installed in system profile. To search, run:
-  # $ nix search wget
+  #----=[ System-Wide Packages ]=----#
   environment.systemPackages = with pkgs; [
     vim # Do not forget to add an editor to edit configuration.nix!
         # The Nano editor is also installed by default.
     wget
     nano
   ];
+
+  #----=[ Fonts ]=----#
+    fonts = {
+      fonts = with pkgs; [
+        noto-fonts
+        noto-fonts-emoji
+        fira-code
+        fira-code-symbols
+        font-awesome
+        (nerdfonts.override {fonts = ["FiraCode"];})
+      ];
+      fontconfig = {
+        enable = true;
+        defaultFonts = {
+          monospace = ["FiraCode Mono"];
+          serif = ["Noto Serif" "Source Han Serif"];
+          sansSerif = ["Noto Sans" "Source Han Sans"];
+        };
+      };
+    };
+  stylix = {
+    enable = true;
+    image = ./wallpaper.jpg;
+    polarity = "dark";
+    base16Scheme = "${pkgs.base16-schemes}/share/themes/tokyo-night-storm.yaml";
+  
+    fonts = {
+      serif = {
+        package = pkgs.noto-fonts;
+        name = "Noto Serif";
+      };
+
+      sansSerif = {
+        package = pkgs.noto-fonts;
+        name = "Noto Sans";
+      };
+
+      monospace = {
+        package = pkgs.noto-fonts;
+        name = "Noto Sans Mono";
+      };
+
+      emoji = {
+        package = pkgs.noto-fonts-emoji;
+        name = "Noto Color Emoji";
+      };
+      sizes = {
+        applications = 12;
+        desktop = 12;
+        popups = 12;
+        terminal = 11;
+      };
+    };
+  };
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
@@ -127,24 +165,15 @@
   # accidentally delete configuration.nix.
   # system.copySystemConfiguration = true;
 
-  # This option defines the first version of NixOS you have installed on this particular machine,
-  # and is used to maintain compatibility with application data (e.g. databases) created on older NixOS versions.
-  #
-  # Most users should NEVER change this value after the initial install, for any reason,
-  # even if you've upgraded your system to a new NixOS release.
-  #
-  # This value does NOT affect the Nixpkgs version your packages and OS are pulled from,
-  # so changing it will NOT upgrade your system - see https://nixos.org/manual/nixos/stable/#sec-upgrading for how
-  # to actually do that.
-  #
-  # This value being lower than the current NixOS release does NOT mean your system is
-  # out of date, out of support, or vulnerable.
-  #
-  # Do NOT change this value unless you have manually inspected all the changes it would make to your configuration,
-  # and migrated your data accordingly.
-  #
-  # For more information, see `man configuration.nix` or https://nixos.org/manual/nixos/stable/options#opt-system.stateVersion .
-  system.stateVersion = "24.05"; # Did you read the comment?
+  system.stateVersion = "24.05";
+
+  home-manager = {
+    # also pass inputs to home-manager modules
+    extraSpecialArgs = {inherit inputs;};
+    users = {
+      "neofax" = import ./home.nix;
+    };
+  };
 
   nix = {
     package = pkgs.nixFlakes;
@@ -154,4 +183,3 @@
   };
 
 }
-

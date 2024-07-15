@@ -1,76 +1,198 @@
-{ config, pkgs, ... }:
+{ config, pkgs, stylix, ... }:
 
 {
-  # Home Manager needs a bit of information about you and the paths it should
-  # manage.
   home.username = "neofax";
   home.homeDirectory = "/home/neofax";
+  home.stateVersion = "24.05";
 
-  # This value determines the Home Manager release that your configuration is
-  # compatible with. This helps avoid breakage when a new Home Manager release
-  # introduces backwards incompatible changes.
-  #
-  # You should not change this value, even if you update Home Manager. If you do
-  # want to update the value, then make sure to first check the Home Manager
-  # release notes.
-  home.stateVersion = "24.05"; # Please read the comment before changing.
+  fonts = {
+    packages = with pkgs; [
+      noto-fonts
+      noto-fonts-cjk
+      noto-fonts-emoji
+      fira-code
+      fira-code-symbols
+      font-awesome
+      (nerdfonts.override {fonts = ["FiraCode"];})
+    ];
 
-  # The home.packages option allows you to install Nix packages into your
-  # environment.
-  home.packages = [
-    # # Adds the 'hello' command to your environment. It prints a friendly
-    # # "Hello, world!" when run.
-    # pkgs.hello
+    fontconfig = {
+      defaultFonts = {
+        serif = ["Noto Serif"];
+        sansSerif = ["Noto Sans"];
+        monospace = ["FiraCode Mono"];
+      };
+    };
+  };
 
-    # # It is sometimes useful to fine-tune packages, for example, by applying
-    # # overrides. You can do that directly here, just don't forget the
-    # # parentheses. Maybe you want to install Nerd Fonts with a limited number of
-    # # fonts?
-    # (pkgs.nerdfonts.override { fonts = [ "FantasqueSansMono" ]; })
 
-    # # You can also create simple shell scripts directly inside your
-    # # configuration. For example, this adds a command 'my-hello' to your
-    # # environment:
-    # (pkgs.writeShellScriptBin "my-hello" ''
-    #   echo "Hello, ${config.home.username}!"
-    # '')
+  stylix = {
+    enable = true;
+    image = pkgs.fetchurl {
+      url = "https://www.pixelstalk.net/wp-content/uploads/2016/05/Epic-Anime-Awesome-Wallpapers.jpg";
+      sha256 = "enQo3wqhgf0FEPHj2coOCvo7DuZv+x5rL/WIo4qPI50=";
+    };
+    # image = ./wallpaper.jpg;
+    polarity = "dark";
+    base16Scheme = "${pkgs.base16-schemes}/share/themes/tokyo-night-storm.yaml";
+  
+    fonts = {
+      serif = {
+        package = pkgs.noto-fonts;
+        name = "Noto Serif";
+      };
+
+      sansSerif = {
+        package = pkgs.noto-fonts;
+        name = "Noto Sans";
+      };
+
+      monospace = {
+        package = pkgs.noto-fonts;
+        name = "Noto Sans Mono";
+      };
+
+      emoji = {
+        package = pkgs.noto-fonts-emoji;
+        name = "Noto Color Emoji";
+      };
+      sizes = {
+        applications = 12;
+        desktop = 12;
+        popups = 12;
+        terminal = 11;
+      };
+    };
+  };
+
+  xdg = {
+    enable = true;
+    userDirs = {
+      enable = true;
+      createDirectories = true;
+    };
+  };
+
+  home.packages = with pkgs; [
+    asciiquarium
+    bat
+    bat
+    bazecor
+    bottom
+    brave
+    cachix
+    cargo
+    celluloid
+    chatterino2
+    cmatrix
+    coursier
+    cowsay
+    delta
+    direnv
+    dmenu
+    doppler
+    duf
+    dunst
+    elinks
+    eww
+    fd
+    feh
+    figlet
+    firefox
+    flameshot
+    flatpak
+    fontconfig
+    freetype
+    fuse-common
+    fx
+    fzf
+    gcc
+    gh
+    git
+    github-desktop
+    glow
+    gnome.gnome-keyring
+    gnugrep
+    gnugrep
+    gnumake
+    gparted
+    graalvm-ce
+    graphviz
+    gum
+    heroku
+    htop
+    hugo
+    ipfetch
+    keychain
+    kitty
+    less
+    libverto
+    lolcat
+    luarocks
+    lxappearance
+    mangohud
+    mosh
+    ncdu
+    neofetch
+    neovim
+    nerdfonts
+    nfs-utils
+    ninja
+    nix-direnv
+    nodejs
+    nomacs
+    ookla-speedtest
+    pavucontrol
+    picom
+    polkit_gnome
+    powershell
+    protonup-ng
+    pulumi
+    python.pkgs.pip
+    python3Full
+    ripgrep
+    ripgrep-all
+    rofi
+    scala-cli
+    sl
+    st
+    starship
+    stdenv
+    stow
+    swaycons
+    sxhkd
+    synergy
+    terminus-nerdfont
+    tig
+    tldr
+    trash-cli
+    tree
+    unzip
+    variety
+    vim
+    w3m
+    wget
+    wl-clipboard
+    xclip
+    xdg-desktop-portal-gtk
+    xfce.thunar
+    xorg.libX11
+    xorg.libX11.dev
+    xorg.libxcb
+    xorg.libXft
+    xorg.libXinerama
+    xorg.xinit
+    xorg.xinput
+    zoxide
+    zsh
   ];
 
-  # Home Manager is pretty good at managing dotfiles. The primary way to manage
-  # plain files is through 'home.file'.
   home.file = {
-    # # Building this configuration will create a copy of 'dotfiles/screenrc' in
-    # # the Nix store. Activating the configuration will then make '~/.screenrc' a
-    # # symlink to the Nix store copy.
-    # ".screenrc".source = dotfiles/screenrc;
-
-    # # You can also set the file content immediately.
-    # ".gradle/gradle.properties".text = ''
-    #   org.gradle.console=verbose
-    #   org.gradle.daemon.idletimeout=3600000
-    # '';
   };
 
-  # Home Manager can also manage your environment variables through
-  # 'home.sessionVariables'. These will be explicitly sourced when using a
-  # shell provided by Home Manager. If you don't want to manage your shell
-  # through Home Manager then you have to manually source 'hm-session-vars.sh'
-  # located at either
-  #
-  #  ~/.nix-profile/etc/profile.d/hm-session-vars.sh
-  #
-  # or
-  #
-  #  ~/.local/state/nix/profiles/profile/etc/profile.d/hm-session-vars.sh
-  #
-  # or
-  #
-  #  /etc/profiles/per-user/neofax/etc/profile.d/hm-session-vars.sh
-  #
   home.sessionVariables = {
-    # EDITOR = "emacs";
+    EDITOR = "nano";
   };
 
-  # Let Home Manager install and manage itself.
   programs.home-manager.enable = true;
 }
