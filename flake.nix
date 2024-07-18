@@ -17,6 +17,7 @@
   };
 
   outputs = { self, nixpkgs, home-manager, stylix, ... }@inputs: {
+    nixpkgs.config.allowUnfree = true;
     nixosConfigurations.default = nixpkgs.lib.nixosSystem {
       specialArgs = {inherit inputs;};
       system = "x86_64-linux";

@@ -4,24 +4,22 @@
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
+      ./xfce.nix
       inputs.home-manager.nixosModules.default
     ];
+
+  # boot.kernelPackages = pkgs.linuxPackages_latest;
 
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
   networking.hostName = "nixie"; # Define your hostname.
-  # Pick only one of the below networking options.
-  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
-  networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
-
-  # Set your time zone.
-  time.timeZone = "America/New_York";
-
-  # Configure network proxy if necessary
+  networking.networkmanager.enable = true;
   # networking.proxy.default = "http://user:password@proxy:port/";
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
+
+  time.timeZone = "America/New_York";
 
   # Select internationalisation properties.
   i18n.defaultLocale = "en_US.UTF-8";
@@ -31,39 +29,46 @@
     useXkbConfig = true; # use xkb.options in tty.
   };
 
-  # Enable the X11 windowing system.
+  hardware.bluetooth.enable = true;
+  hardware.bluetooth.powerOnBoot = true;
+  virtualisation.virtualbox.guest.enable = true;
+  # virtualisation.virtualbox.guest.x11 = true;
+  security.rtkit.enable = true;
   services = {
+    blueman.enable = true;
     xserver = {
       enable = true;
       displayManager = {
         lightdm.enable = true;
         defaultSession = "xfce";
       };
-
+      xkb.layout = "us";
       desktopManager.xfce.enable = true;
       windowManager.qtile.enable = true;
     };
+    printing.enable = true;
+    pipewire = {
+      enable = true;
+      alsa.enable = true;
+      alsa.support32Bit = true;
+      pulse.enable = true;
+      jack.enable = true;
+      wireplumber.enable = true;
+      wireplumber.configPackages = [
+        (pkgs.writeTextDir "share/wireplumber/wireplumber.conf.d/10-bluez.conf" ''
+          monitor.bluez.properties = {
+            bluez5.roles = [ a2dp_sink a2dp_source bap_sink bap_source hsp_hs hsp_ag hfp_hf hfp_ag ]
+            bluez5.codecs = [ sbc sbc_xq aac ]
+            bluez5.enable-sbc-xq = true
+            bluez5.hfphsp-backend = "native"
+          }
+        '')
+      ];
+    };
+    openssh.enable = true;
+
   };
   
-  # Configure keymap in X11
-  services.xserver.xkb.layout = "us";
-  # services.xserver.xkb.options = "eurosign:e,caps:escape";
-
-  # Enable CUPS to print documents.
-  services.printing.enable = true;
-
-  # Enable sound.
-  # hardware.pulseaudio.enable = true;
-  # OR
-  services.pipewire = {
-    enable = true;
-    pulse.enable = true;
-  };
-
-  # Enable touchpad support (enabled default in most desktopManager).
-  # services.libinput.enable = true;
-  
-  # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.neofax = {
     isNormalUser = true;
     extraGroups = [ 
@@ -71,47 +76,200 @@
       "networkmanager" 
       "sshd" 
       "video" 
+      "vboxsf"
       "wheel" 
-    ]; # Enable ‘sudo’ for the user.
-    
+    ];
+    shell = pkgs.zsh;
   };
 
+  users.defaultUserShell = pkgs.zsh;
+  # environment.shells = with pkgs; [ zsh ];
 
-  programs.zsh.enable = true;
+  programs = {
+    mtr.enable = true;
+    gnupg.agent = {
+      enable = true;
+      enableSSHSupport = true;
+    };
+
+    zsh.enable = true;
+  };
 
   #----=[ System-Wide Packages ]=----#
   environment.systemPackages = with pkgs; [
-    vim # Do not forget to add an editor to edit configuration.nix!
-        # The Nano editor is also installed by default.
-    wget
+    bacon
+    bat
+    borgbackup
+    bottom
+    brave
+    cachix
+    cargo
+    cargo-edit
+    cargo-feature
+    cargo-info
+    cargo-license
+    cargo-tarpaulin
+    choose
+    clippy
+    cmatrix
+    colorpanes
+    cowsay
+    delta
+    deno
+    dig
+    direnv
+    diskonaut
+    duf
+    elinks
+    eza
+    fastfetch
+    fd
+    fdupes
+    ffmpeg
+    figlet
+    file
+    firefox
+    flatpak
+    fontconfig
+    freetype
+    fuse-common
+    fx
+    fzf
+    gcc
+    gcc14
+    gdu
+    gh
+    git
+    gnugrep
+    gnumake
+    gparted
+    graalvm-ce
+    graphviz
+    gum
+    hdparm
+    hexyl
+    htop
+    httpie
+    hwinfo
+    iamb
+    imagemagick
+    ipfetch
+    jpegoptim
+    jq
+    keychain
+    killall
+    less
+    libverto
+    lightdm
+    litecli
+    lolcat
+    luarocks
+    lychee
+    mtr
     nano
+    ncdu
+    neofetch
+    neovim
+    nerdfonts
+    nfs-utils
+    ninja
+    nix-direnv
+    nix-init
+    nixpkgs-review
+    nix-search-cli
+    nix-tree
+    nodejs
+    npm-check-updates
+    nvd
+    onefetch
+    ookla-speedtest
+    p7zip
+    pass
+    pavucontrol
+    polkit_gnome
+    powershell
+    protonup-ng
+    python3Full
+    rclone
+    recode
+    restic
+    ripgrep
+    ripgrep-all
+    rmlint
+    rsync
+    rustc
+    rustfmt
+    scc
+    sd
+    sl
+    smartmontools
+    sox
+    stow
+    stress
+    tectonic
+    terminus-nerdfont
+    tig
+    timg
+    tldr
+    trash-cli
+    trashy
+    tree
+    treefmt
+    unar
+    unzip
+    usbutils
+    vim
+    w3m
+    wget
+    whois
+    xorg.libX11
+    xorg.libX11.dev
+    xorg.libxcb
+    xorg.libXft
+    xorg.libXinerama
+    xorg.xinit
+    xorg.xinput
+    yazi
+    zellij
+    zoxide
+    zsh
+
   ];
 
   #----=[ Fonts ]=----#
-    fonts = {
-      fonts = with pkgs; [
-        noto-fonts
-        noto-fonts-emoji
-        fira-code
-        fira-code-symbols
-        font-awesome
-        (nerdfonts.override {fonts = ["FiraCode"];})
-      ];
-      fontconfig = {
-        enable = true;
-        defaultFonts = {
-          monospace = ["FiraCode Mono"];
-          serif = ["Noto Serif" "Source Han Serif"];
-          sansSerif = ["Noto Sans" "Source Han Sans"];
-        };
-      };
-    };
+    # fonts.fontconfig.enable = true;
+      # home.packages = with pkgs; [
+        # noto-fonts
+        # noto-fonts-emoji
+        # fira-code
+        # fira-code-symbols
+        # font-awesome
+        # (nerdfonts.override { fonts = [ "FiraCode" "DroidSansMono" ]; })
+      # ];
+    # fonts = {
+      # fonts = with pkgs; [
+        # noto-fonts
+        # noto-fonts-emoji
+        # fira-code
+        # fira-code-symbols
+        # font-awesome
+        # (nerdfonts.override {fonts = ["FiraCode"];})
+      # ];
+      # fontconfig = {
+        # enable = true;
+        # defaultFonts = {
+          # monospace = ["FiraCode Mono"];
+          # serif = ["Noto Serif" "Source Han Serif"];
+          # sansSerif = ["Noto Sans" "Source Han Sans"];
+        # };
+      # };
+    # };
   stylix = {
     enable = true;
     image = ./wallpaper.jpg;
     polarity = "dark";
     base16Scheme = "${pkgs.base16-schemes}/share/themes/tokyo-night-storm.yaml";
-  
+    imageScalingMode = "fill";
     fonts = {
       serif = {
         package = pkgs.noto-fonts;
@@ -139,26 +297,18 @@
         terminal = 11;
       };
     };
+    targets = {
+      chromium.enable = true;
+      console.enable = true;
+      feh.enable = true;
+      lightdm.enable = true;
+      nixos-icons.enable = true;
+      
+    };
   };
 
-  # Some programs need SUID wrappers, can be configured further or are
-  # started in user sessions.
-  programs.mtr.enable = true;
-  programs.gnupg.agent = {
-    enable = true;
-    enableSSHSupport = true;
-  };
 
-  # List services that you want to enable:
-
-  # Enable the OpenSSH daemon.
-  services.openssh.enable = true;
-
-  # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
-  # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
+  nixpkgs.config.allowUnfree = true;
 
   # Copy the NixOS configuration file and link it from the resulting system
   # (/run/current-system/configuration.nix). This is useful in case you
